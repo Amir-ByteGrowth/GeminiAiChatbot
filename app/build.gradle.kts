@@ -72,7 +72,7 @@ dependencies {
     // generative ai implementation
     implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
     //image loading library
-    implementation("io.coil-kt:coil:2.6.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     // compose view model
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
 }
