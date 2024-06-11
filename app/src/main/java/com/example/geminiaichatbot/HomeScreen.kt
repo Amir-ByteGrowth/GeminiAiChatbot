@@ -182,7 +182,7 @@ fun HomeScreen(
     { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize().background(color = Color.Green)
+                .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
                 .verticalScroll(
@@ -192,7 +192,7 @@ fun HomeScreen(
             when (uiState) {
                 is HomeUiState.Initial -> {}
                 is HomeUiState.Loading -> {
-                    Box(modifier = Modifier.background(color = Color.Red).fillMaxSize(),contentAlignment = Alignment.Center, ) {
+                    Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.Center, ) {
                         CircularProgressIndicator()
                     }
                 }
