@@ -50,7 +50,7 @@ class HomeViewModel : ViewModel() {
 
                 var outputText = ""
                 generativeModel.generateContentStream(content).collect {
-                    outputText = it.text ?: ""
+                    outputText += it.text ?: ""
                     _uiState.value = HomeUiState.Success(outputText)
                 }
 

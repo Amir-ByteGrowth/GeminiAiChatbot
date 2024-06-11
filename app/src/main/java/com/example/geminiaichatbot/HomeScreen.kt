@@ -1,5 +1,6 @@
 package com.example.geminiaichatbot
 
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -35,21 +36,44 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppContent(viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
 
     val appUiState = viewModel.uiState.collectAsState()
-    HomeScreen(uiState = appUiState.value){
-        inputText, selectedImages ->
+
+    val coroutineScope = rememberCoroutineScope()
+    val imageRequestBuilder = ImageRequest.Builder(LocalContext.current)
+    val imageLoader = ImageLoader.Builder(LocalContext.current).build()
+
+    HomeScreen(uiState = appUiState.value) { inputText, selectedImages ->
+        coroutineScope.launch {
+            val bitmaps = selectedImages.mapNotNull {
+                val imageRequest = imageRequestBuilder.data(it).size(768).build()
+                val imageResult = imageLoader.execute(imageRequest)
+                if (imageResult is SuccessResult) {
+                    return@mapNotNull (imageResult.drawable as BitmapDrawable).bitmap
+                } else {
+                    return@mapNotNull null
+                }
+            }
+
+            viewModel.questioning(inputText,bitmaps)
+        }
     }
 
 }
@@ -165,10 +189,10 @@ fun HomeScreen(
                 is HomeUiState.Success -> {
                     Card(
                         modifier = Modifier
-                            .padding(vertical = 10.dp)
+
                             .fillMaxWidth(), shape = MaterialTheme.shapes.large
                     ) {
-                        Text(text = uiState.outputText)
+                        Text(text = uiState.outputText, modifier = Modifier.padding(15.dp))
                     }
                 }
 
