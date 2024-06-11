@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -38,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -69,4 +71,8 @@ dependencies {
 
     // generative ai implementation
     implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
+    //image loading library
+    implementation("io.coil-kt:coil:2.6.0")
+    // compose view model
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
 }
