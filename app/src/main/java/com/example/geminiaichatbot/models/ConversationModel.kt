@@ -1,3 +1,10 @@
 package com.example.geminiaichatbot.models
 
-data class ConversationModel(var message: String = "", var type: Int=0)
+import com.example.geminiaichatbot.chatui.ChatItemsUi
+import com.example.geminiaichatbot.chatui.SenderType
+
+data class ConversationModel(
+    var message: String = "",
+    var type: ChatItemsUi = ChatItemsUi.LOADING,
+    var senderType: SenderType = SenderType.USER
+)

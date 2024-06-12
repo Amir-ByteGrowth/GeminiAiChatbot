@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.geminiaichatbot.models.ConversationModel
 
@@ -23,8 +22,8 @@ fun MessageItem(conversationModel: ConversationModel) {
     Card(
         modifier = Modifier
             .padding(
-                start = if (conversationModel.type == 0) 30.dp else 0.dp,
-                end = if (conversationModel.type == 1) 30.dp else 0.dp
+                start = if (conversationModel.senderType == SenderType.USER) 30.dp else 0.dp,
+                end = if (conversationModel.senderType == SenderType.BOOT) 30.dp else 0.dp
             )
             .fillMaxWidth(), shape = MaterialTheme.shapes.large
     ) {
@@ -59,6 +58,18 @@ fun ProgressBarItem(modifier: Modifier = Modifier) {
     ) {
         CircularProgressIndicator()
     }
+}
+
+
+enum class ChatItemsUi {
+    LOADING,
+    SUCCESS,
+    ERROR
+}
+
+enum class SenderType {
+    USER,
+    BOOT
 }
 
 

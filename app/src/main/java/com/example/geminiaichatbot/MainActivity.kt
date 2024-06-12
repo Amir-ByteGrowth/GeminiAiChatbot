@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.geminiaichatbot.chatui.ChatContent
 import com.example.geminiaichatbot.ui.theme.GeminiAIChatbotTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,8 +23,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppContent()
-
+//                    AppContent()
+                    ChatContent()
                 }
             }
         }
