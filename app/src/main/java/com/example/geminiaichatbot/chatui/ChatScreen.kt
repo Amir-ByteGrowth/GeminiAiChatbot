@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -35,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -59,6 +62,7 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.geminiaichatbot.UriCustomSaver
 import com.example.geminiaichatbot.models.ConversationModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -87,6 +91,14 @@ fun ChatContent(viewModel: ChatViewModel = androidx.lifecycle.viewmodel.compose.
     }
 }
 
+@Composable
+fun scrollToBottom(lazyListState: LazyListState) {
+    LaunchedEffect(Unit) {
+        delay(150) // Small delay to ensure the list has been updated
+        lazyListState.animateScrollToItem(Int.MAX_VALUE)
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,11 +114,14 @@ fun ChatScreen(
     val messages = remember { mutableListOf<ConversationModel>() }
     var uiMessages by remember { mutableStateOf(listOf<ConversationModel>()) }
 
+
     ////
 
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
+
+    val lazyListState = rememberLazyListState()
 
 
     var userQues by rememberSaveable {
@@ -129,6 +144,7 @@ fun ChatScreen(
     // Function to update the UI messages
     fun updateUiMessages() {
         uiMessages = messages.toList()
+
     }
 
     when (uiState) {
@@ -137,12 +153,14 @@ fun ChatScreen(
             messages.add(ConversationModel(type = ChatItemsUi.LOADING))
             // Function to update the UI messages
             updateUiMessages()
+            scrollToBottom(lazyListState)
         }
         is HomeUiState.RemoveLoading ->{
             if (messages.any { it.type == ChatItemsUi.LOADING })
                 messages.remove(messages.last { it.type == ChatItemsUi.LOADING })
 
         }
+
 
         is HomeUiState.Success -> {
             if (messages.any { it.id == uiState.id
@@ -156,6 +174,8 @@ fun ChatScreen(
                         id = uiState.id
                     )
                 )
+                scrollToBottom(lazyListState)
+
              Log.d("ContainsId","true")
             }else{
                 messages.add(
@@ -166,6 +186,7 @@ fun ChatScreen(
                         id = uiState.id
                     )
                 )
+                scrollToBottom(lazyListState)
             }
 
             // Function to update the UI messages
@@ -217,7 +238,7 @@ fun ChatScreen(
                         onValueChange = { userQues = it },
                         placeholder = {
                             Text(
-                                text = "EUpload Image and ask questions ",
+                                text = "Upload Image and ask questions ",
                                 style = TextStyle(fontSize = 11.sp)
                             )
                         }, modifier = Modifier
@@ -285,7 +306,7 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .height(500.dp),
+                .height(500.dp), state = lazyListState
         ) {
 
             items(uiMessages) { message ->

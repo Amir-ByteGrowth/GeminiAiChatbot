@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,9 +24,10 @@ fun MessageItem(conversationModel: ConversationModel) {
         modifier = Modifier
             .padding(
                 start = if (conversationModel.senderType == SenderType.USER) 30.dp else 0.dp,
-                end = if (conversationModel.senderType == SenderType.BOOT) 30.dp else 0.dp
+                end = if (conversationModel.senderType == SenderType.BOOT) 30.dp else 0.dp,
+                top = 10.dp
             )
-            .fillMaxWidth(), shape = MaterialTheme.shapes.large
+            .fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = if (conversationModel.senderType == SenderType.USER) MaterialTheme.colorScheme.primaryContainer else Color.LightGray)
     ) {
         Text(text = conversationModel.message, modifier = Modifier.padding(15.dp))
     }
@@ -53,6 +55,7 @@ fun ErrorMessageItem(errorMessage: String) {
 fun ProgressBarItem(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
+            .padding(vertical = 10.dp)
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
