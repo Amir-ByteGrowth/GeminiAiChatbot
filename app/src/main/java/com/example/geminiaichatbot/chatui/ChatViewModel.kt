@@ -3,6 +3,7 @@ package com.example.geminiaichatbot.chatui
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.geminiaichatbot.BuildConfig
@@ -10,8 +11,10 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.launch
 
 class ChatViewModel : ViewModel() {
@@ -36,7 +39,7 @@ class ChatViewModel : ViewModel() {
         )
     }
 
-
+    var id = -1
     fun questioning(userInput: String, selectedImages: List<Bitmap>) {
 
         _uiState.value = HomeUiState.Loading
@@ -44,6 +47,7 @@ class ChatViewModel : ViewModel() {
         enable = true
 
         val prompt = "Take a look at images and answer the following questions $userInput"
+
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -53,21 +57,24 @@ class ChatViewModel : ViewModel() {
                     }
                     text(prompt)
                 }
-
+                id++
                 var outputText = ""
 
-                generativeModel.generateContentStream(content).collect {
+                generativeModel.generateContentStream(content).buffer().collect {
                     if (enable) {
                         _uiState.value = HomeUiState.RemoveLoading
-                        enable=false
+                        enable = false
                         Handler(Looper.getMainLooper()).postDelayed({
                             outputText += it.text ?: ""
-                            _uiState.value = HomeUiState.Success(outputText)
-                        }, 1000)
+
+                        }, 3000)
                     } else {
                         outputText += it.text ?: ""
-                        _uiState.value = HomeUiState.Success(outputText)
+                        Log.d("GenerativeStream", it.text.toString())
+                        _uiState.value = HomeUiState.Success(outputText,id)
+                        delay(50)
                     }
+
                 }
 
             } catch (e: Exception) {
@@ -84,6 +91,6 @@ sealed interface HomeUiState {
     object Initial : HomeUiState
     object Loading : HomeUiState
     object RemoveLoading : HomeUiState
-    data class Success(val outputText: String) : HomeUiState
+    data class Success(val outputText: String, var id: Int) : HomeUiState
     data class Failure(val errorText: String) : HomeUiState
 }

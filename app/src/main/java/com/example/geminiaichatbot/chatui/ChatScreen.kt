@@ -2,6 +2,7 @@ package com.example.geminiaichatbot.chatui
 
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -140,18 +141,35 @@ fun ChatScreen(
         is HomeUiState.RemoveLoading ->{
             if (messages.any { it.type == ChatItemsUi.LOADING })
                 messages.remove(messages.last { it.type == ChatItemsUi.LOADING })
+
         }
 
         is HomeUiState.Success -> {
-            messages.add(
-                ConversationModel(
-                    message = uiState.outputText,
-                    type = ChatItemsUi.SUCCESS,
-                    senderType = SenderType.BOOT
+            if (messages.any { it.id == uiState.id
+            }) {
+                messages.removeAt(messages.indexOfFirst { it.id == uiState.id })
+                messages.add(
+                    ConversationModel(
+                        message = uiState.outputText,
+                        type = ChatItemsUi.SUCCESS,
+                        senderType = SenderType.BOOT,
+                        id = uiState.id
+                    )
                 )
-            )
+             Log.d("ContainsId","true")
+            }else{
+                messages.add(
+                    ConversationModel(
+                        message = uiState.outputText,
+                        type = ChatItemsUi.SUCCESS,
+                        senderType = SenderType.BOOT,
+                        id = uiState.id
+                    )
+                )
+            }
+
             // Function to update the UI messages
-             updateUiMessages()
+            updateUiMessages()
         }
 
         is HomeUiState.Failure -> {
