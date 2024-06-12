@@ -24,7 +24,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     AppContent()
 
-
                 }
             }
         }
