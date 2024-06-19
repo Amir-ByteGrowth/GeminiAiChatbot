@@ -25,7 +25,7 @@ class ChatViewModel : ViewModel() {
 
     var enable = false
 
-    private lateinit var generativeModel: GenerativeModel
+    private var generativeModel: GenerativeModel
 
     init {
         val config = generationConfig {
