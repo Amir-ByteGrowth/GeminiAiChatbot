@@ -70,7 +70,7 @@ class ChatViewModel : ViewModel() {
             )
 
     private fun fetchSuggestions(query: String): List<SuggestionsModel> {
-
+// we can make api call here or we can get data from repository
         return availableSuggestions.filter { it.text.contains(query, true) }
     }
 
