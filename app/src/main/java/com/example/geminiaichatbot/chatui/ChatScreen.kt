@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -50,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
@@ -62,6 +65,7 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.geminiaichatbot.UriCustomSaver
 import com.example.geminiaichatbot.models.ConversationModel
+import com.example.geminiaichatbot.models.SuggestionsModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,12 +73,18 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatContent(viewModel: ChatViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val appUiState = viewModel.uiState.collectAsState()
+    val suggestions = viewModel.suggestions.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val imageRequestBuilder = ImageRequest.Builder(LocalContext.current)
     val imageLoader = ImageLoader.Builder(LocalContext.current).build()
 
-    ChatScreen(uiState = appUiState.value) { inputText, selectedImages ->
+
+
+    ChatScreen(
+        uiState = appUiState.value,
+        suggestions.value, { viewModel.settingInputMessage(it) }
+    ) { inputText, selectedImages ->
         coroutineScope.launch {
             val bitmaps = selectedImages.mapNotNull {
                 val imageRequest = imageRequestBuilder.data(it).size(768).build()
@@ -92,7 +102,7 @@ fun ChatContent(viewModel: ChatViewModel = androidx.lifecycle.viewmodel.compose.
 }
 
 @Composable
-fun scrollToBottom(lazyListState: LazyListState) {
+fun ScrollToBottom(lazyListState: LazyListState) {
     LaunchedEffect(Unit) {
         delay(150) // Small delay to ensure the list has been updated
         lazyListState.animateScrollToItem(Int.MAX_VALUE)
@@ -104,6 +114,8 @@ fun scrollToBottom(lazyListState: LazyListState) {
 @Composable
 fun ChatScreen(
     uiState: HomeUiState = HomeUiState.Loading,
+    suggestions: List<SuggestionsModel> = emptyList(),
+    getSuggestions: (queryStr: String) -> Unit,
     onSendClicked: (String, List<Uri>) -> Unit
 ) {
 
@@ -153,7 +165,7 @@ fun ChatScreen(
             messages.add(ConversationModel(type = ChatItemsUi.LOADING))
             // Function to update the UI messages
             updateUiMessages()
-            scrollToBottom(lazyListState)
+            ScrollToBottom(lazyListState)
         }
         is HomeUiState.RemoveLoading ->{
             if (messages.any { it.type == ChatItemsUi.LOADING })
@@ -174,7 +186,7 @@ fun ChatScreen(
                         id = uiState.id
                     )
                 )
-                scrollToBottom(lazyListState)
+                ScrollToBottom(lazyListState)
 
              Log.d("ContainsId","true")
             }else{
@@ -186,7 +198,7 @@ fun ChatScreen(
                         id = uiState.id
                     )
                 )
-                scrollToBottom(lazyListState)
+                ScrollToBottom(lazyListState)
             }
 
             // Function to update the UI messages
@@ -215,6 +227,24 @@ fun ChatScreen(
         },
         bottomBar = {
             Column {
+
+                AnimatedVisibility(visible = suggestions.isNotEmpty()) {
+                    LazyRow {
+                        items(suggestions) { item ->
+                            Text(
+                                text = item.text,
+                                modifier = Modifier
+                                    .padding(5.dp)
+                                    .background(
+                                        color = Color.Green,
+                                        shape = RoundedCornerShape(10.dp)
+                                    )
+                                    .padding(5.dp),
+                            )
+                        }
+                    }
+                }
+
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -235,7 +265,10 @@ fun ChatScreen(
                     //input query
                     OutlinedTextField(
                         value = userQues,
-                        onValueChange = { userQues = it },
+                        onValueChange = {
+                            userQues = it
+                            getSuggestions.invoke(it)
+                        },
                         placeholder = {
                             Text(
                                 text = "Upload Image and ask questions ",
